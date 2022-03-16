@@ -7,7 +7,8 @@ from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
 from luma.core.legacy import text, show_message
-from luma.core.legacy.font import proportional, CP437_FONT, SEG7_FONT, TINY_FONT
+from luma.core.legacy.font import proportional, TINY_FONT #,CP437_FONT, SEG7_FONT
+from Font import TSLA_FONT
 
 zero_time = datetime(2022,8,10,hour=18,minute=9)
 
@@ -20,9 +21,9 @@ def minute_change(device):
 
     def helper(current_y):
         with canvas(device) as draw:
-            text(draw, (1, 0), hours, fill="white", font=proportional(CP437_FONT))
+            text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
             text(draw, (15, 0), ":", fill="white", font=proportional(TINY_FONT))
-            text(draw, (17, current_y), minutes, fill="white", font=proportional(CP437_FONT))
+            text(draw, (17, current_y), minutes, fill="white", font=proportional(TSLA_FONT))
         time.sleep(0.1)
 
     for current_y in range(1, 9):
@@ -39,9 +40,9 @@ def animation(device, from_y, to_y):
     current_y = from_y
     while current_y != to_y:
         with canvas(device) as draw:
-            text(draw, (1, current_y), hourstime, fill="white", font=proportional(CP437_FONT))
+            text(draw, (1, current_y), hourstime, fill="white", font=proportional(TSLA_FONT))
             text(draw, (15, current_y), ":", fill="white", font=proportional(TINY_FONT))
-            text(draw, (17, current_y), mintime, fill="white", font=proportional(CP437_FONT))
+            text(draw, (17, current_y), mintime, fill="white", font=proportional(TSLA_FONT))
         time.sleep(0.1)
         current_y += 1 if to_y > from_y else -1
 
@@ -75,7 +76,7 @@ def main():
                 arrow = '\36'
             full_msg = "TSLA " + arrow + " " + str(tsla_price)
             animation(device, 0, 8)
-            show_message(device, full_msg, fill="white", font=proportional(CP437_FONT))
+            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT))
             animation(device, 8, 0)
         else:
             # Do the following twice a second (so the seconds' indicator blips).
@@ -86,9 +87,9 @@ def main():
             hours = zero_time.strftime('%H')
             minutes = zero_time.strftime('%M')
             with canvas(device) as draw:
-                text(draw, (1, 0), hours, fill="white", font=proportional(CP437_FONT))
+                text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
                 text(draw, (15, 0), ":" if toggle else " ", fill="white", font=proportional(TINY_FONT))
-                text(draw, (17, 0), minutes, fill="white", font=proportional(CP437_FONT))
+                text(draw, (17, 0), minutes, fill="white", font=proportional(TSLA_FONT))
             time.sleep(0.5)
 
 
