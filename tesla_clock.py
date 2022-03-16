@@ -48,7 +48,11 @@ def main():
     serial = spi(port=0, device=0, gpio=noop())
     device = max7219(serial, cascaded=4, block_orientation=-90, blocks_arranged_in_reverse_order=False)
     device.contrast(16)
+    show_message(device, "loading tesla clock", fill="white", font=proportional(TSLA_FONT))
     tsla = yf.Ticker('TSLA')
+    tsla_info = tsla.info
+    tsla_price = tsla_info['regularMarketPrice']
+    tsla_prev_close_price = tsla_info['regularMarketPreviousClose']
 
     # The time ascends from the abyss...
     animation(device, 8, 0)
