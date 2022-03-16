@@ -72,8 +72,8 @@ def main():
                 arrow = '\36'
             full_msg = "TSLA " + arrow + " " + str(tsla_price)
             animation(device, 0, 8)
-            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.05)
-            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.05)
+            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.07)
+            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.07)
             animation(device, 8, 0)
         else:
             # Do the following twice a second (so the seconds' indicator blips).
