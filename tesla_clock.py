@@ -22,7 +22,7 @@ def minute_change(device):
     def helper(current_y):
         with canvas(device) as draw:
             text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
-            text(draw, (15, 0), ":", fill="white", font=proportional(TINY_FONT))
+            text(draw, (15, 0), ":", fill="white", font=proportional(TSLA_FONT))
             text(draw, (17, current_y), minutes, fill="white", font=proportional(TSLA_FONT))
         time.sleep(0.1)
 
@@ -41,7 +41,7 @@ def animation(device, from_y, to_y):
     while current_y != to_y:
         with canvas(device) as draw:
             text(draw, (1, current_y), hourstime, fill="white", font=proportional(TSLA_FONT))
-            text(draw, (15, current_y), ":", fill="white", font=proportional(TINY_FONT))
+            text(draw, (15, current_y), ":", fill="white", font=proportional(TSLA_FONT))
             text(draw, (17, current_y), mintime, fill="white", font=proportional(TSLA_FONT))
         time.sleep(0.1)
         current_y += 1 if to_y > from_y else -1
