@@ -10,8 +10,6 @@ from luma.core.legacy import text, show_message
 from luma.core.legacy.font import proportional #, TINY_FONT , CP437_FONT, SEG7_FONT
 from Font import TSLA_FONT
 
-zero_time = datetime(2022,8,10,hour=18,minute=9)
-
 def minute_change(device):
     '''When we reach a minute change, animate it.'''
     hours = datetime.now().strftime('%H')
@@ -21,7 +19,7 @@ def minute_change(device):
         with canvas(device) as draw:
             text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
             text(draw, (15, 0), ":", fill="white", font=proportional(TSLA_FONT))
-            text(draw, (17, current_y), minutes, fill="white", font=proportional(TSLA_FONT))
+            text(draw, (18, current_y), minutes, fill="white", font=proportional(TSLA_FONT))
         time.sleep(0.1)
 
     for current_y in range(1, 9):
@@ -40,7 +38,7 @@ def animation(device, from_y, to_y):
         with canvas(device) as draw:
             text(draw, (1, current_y), hourstime, fill="white", font=proportional(TSLA_FONT))
             text(draw, (15, current_y), ":", fill="white", font=proportional(TSLA_FONT))
-            text(draw, (17, current_y), mintime, fill="white", font=proportional(TSLA_FONT))
+            text(draw, (18, current_y), mintime, fill="white", font=proportional(TSLA_FONT))
         time.sleep(0.1)
         current_y += 1 if to_y > from_y else -1
 
@@ -85,7 +83,7 @@ def main():
             with canvas(device) as draw:
                 text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
                 text(draw, (15, 0), ":" if toggle else " ", fill="white", font=proportional(TSLA_FONT))
-                text(draw, (17, 0), minutes, fill="white", font=proportional(TSLA_FONT))
+                text(draw, (18, 0), minutes, fill="white", font=proportional(TSLA_FONT))
             time.sleep(0.5)
 
 
