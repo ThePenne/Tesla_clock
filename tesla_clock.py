@@ -7,17 +7,15 @@ from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
 from luma.core.legacy import text, show_message
-from luma.core.legacy.font import proportional, TINY_FONT #,CP437_FONT, SEG7_FONT
+from luma.core.legacy.font import proportional #, TINY_FONT , CP437_FONT, SEG7_FONT
 from Font import TSLA_FONT
 
 zero_time = datetime(2022,8,10,hour=18,minute=9)
 
 def minute_change(device):
     '''When we reach a minute change, animate it.'''
-    #hours = datetime.now().strftime('%H')
-    #minutes = datetime.now().strftime('%M')
-    hours = zero_time.strftime('%H')
-    minutes = zero_time.strftime('%M')
+    hours = datetime.now().strftime('%H')
+    minutes = datetime.now().strftime('%M')
 
     def helper(current_y):
         with canvas(device) as draw:
@@ -84,11 +82,9 @@ def main():
             # Even my Raspberry PI2 can do this at 4% of a single one of the 4 cores!
             hours = datetime.now().strftime('%H')
             minutes = datetime.now().strftime('%M')
-            hours = zero_time.strftime('%H')
-            minutes = zero_time.strftime('%M')
             with canvas(device) as draw:
                 text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
-                text(draw, (15, 0), ":" if toggle else " ", fill="white", font=proportional(TINY_FONT))
+                text(draw, (15, 0), ":" if toggle else " ", fill="white", font=proportional(TSLA_FONT))
                 text(draw, (17, 0), minutes, fill="white", font=proportional(TSLA_FONT))
             time.sleep(0.5)
 
