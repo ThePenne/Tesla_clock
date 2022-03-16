@@ -44,11 +44,11 @@ def animation(device, from_y, to_y):
 
 
 def main():
-    # Setup for Banggood version of 4 x 8x8 LED Matrix (https://bit.ly/2Gywazb)
+    # Setup for AliExpress version of 4 x 8x8 Max7219 LED Matrix (https://he.aliexpress.com/item/4001131640516.html?gatewayAdapt=glo2isr&spm=a2g0o.order_list.0.0.21ef1802Xq5r1c)
     serial = spi(port=0, device=0, gpio=noop())
     device = max7219(serial, cascaded=4, block_orientation=-90, blocks_arranged_in_reverse_order=False)
     device.contrast(16)
-    show_message(device, "loading tesla clock", fill="white", font=proportional(TSLA_FONT))
+    show_message(device, "loading...", fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
     tsla = yf.Ticker('TSLA')
     tsla_info = tsla.info
     tsla_price = tsla_info['regularMarketPrice']
@@ -64,7 +64,7 @@ def main():
         if sec == 59:
             # When we change minutes, animate the minute change
             minute_change(device)
-        elif sec == 0 and datetime.now().strftime('%M') % 5 == 0:
+        elif (sec == 30) and (datetime.now().strftime('%M') % 5 == 0):
             # Half-way through each minute, display the complete date/time,
             # animating the time display into and out of the abyss.
             tsla_info = tsla.info
