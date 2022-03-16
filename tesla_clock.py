@@ -64,7 +64,7 @@ def main():
         if sec == 59:
             # When we change minutes, animate the minute change
             minute_change(device)
-        elif (sec == 30) and (datetime.now().strftime('%M') % 5 == 0):
+        elif (sec == 30) and (int(datetime.now().strftime('%M')) % 5 == 0):
             # Half-way through each minute, display the complete date/time,
             # animating the time display into and out of the abyss.
             tsla_info = tsla.info
