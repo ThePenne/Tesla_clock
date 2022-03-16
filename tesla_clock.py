@@ -60,7 +60,7 @@ def main():
         if sec == 59:
             # When we change minutes, animate the minute change
             minute_change(device)
-        elif sec == 30 or sec == 50:
+        elif sec == 30 and sec == 50:
             # Half-way through each minute, display the complete date/time,
             # animating the time display into and out of the abyss.
             tsla_info = tsla.info
@@ -72,8 +72,8 @@ def main():
                 arrow = '\36'
             full_msg = "TSLA " + arrow + " " + str(tsla_price)
             animation(device, 0, 8)
-            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.07)
-            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.07)
+            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
+            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
             animation(device, 8, 0)
         else:
             # Do the following twice a second (so the seconds' indicator blips).
