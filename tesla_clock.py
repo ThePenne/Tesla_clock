@@ -48,7 +48,7 @@ def main():
     serial = spi(port=0, device=0, gpio=noop())
     device = max7219(serial, cascaded=4, block_orientation=-90, blocks_arranged_in_reverse_order=False)
     device.contrast(16)
-    show_message(device, "loading...", fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
+    show_message(device, "starting...", fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
     tsla = yf.Ticker('TSLA')
     tsla_info = tsla.info
     tsla_price = tsla_info['regularMarketPrice']
