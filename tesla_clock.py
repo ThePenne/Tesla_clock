@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 import yfinance as yf
 import time
 from datetime import datetime
