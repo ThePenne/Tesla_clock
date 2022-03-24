@@ -55,7 +55,7 @@ def main():
     # Setup for AliExpress version of 4 x 8x8 Max7219 LED Matrix (https://he.aliexpress.com/item/4001131640516.html?gatewayAdapt=glo2isr&spm=a2g0o.order_list.0.0.21ef1802Xq5r1c)
     serial = spi(port=0, device=0, gpio=noop())
     device = max7219(serial, cascaded=4, block_orientation=-90, blocks_arranged_in_reverse_order=False)
-    device.contrast(10)
+    device.contrast(5)
 
     # The time ascends from the abyss...
     animation(device, 8, 0)
