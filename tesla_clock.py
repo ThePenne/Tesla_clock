@@ -7,8 +7,13 @@ from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
 from luma.core.legacy import text, show_message
-from luma.core.legacy.font import proportional #, TINY_FONT , CP437_FONT, SEG7_FONT
+from luma.core.legacy.font import proportional #, CP437_FONT, TINY_FONT, SEG7_FONT
 from Font import TSLA_FONT
+from threading import Thread, Event
+
+event = Event()
+
+price_change = {"arrow": '-', "tsla_price": 0}
 
 def minute_change(device):
     '''When we reach a minute change, animate it.'''
@@ -44,52 +49,65 @@ def animation(device, from_y, to_y):
 
 
 def main():
+    t = Thread(target=update_tsla_price, args = (price_change, ))
+    t.start()
+
     # Setup for AliExpress version of 4 x 8x8 Max7219 LED Matrix (https://he.aliexpress.com/item/4001131640516.html?gatewayAdapt=glo2isr&spm=a2g0o.order_list.0.0.21ef1802Xq5r1c)
     serial = spi(port=0, device=0, gpio=noop())
     device = max7219(serial, cascaded=4, block_orientation=-90, blocks_arranged_in_reverse_order=False)
-    device.contrast(16)
-    show_message(device, "starting...", fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
-    tsla = yf.Ticker('TSLA')
-    tsla_info = tsla.info
-    tsla_price = tsla_info['regularMarketPrice']
-    tsla_prev_close_price = tsla_info['regularMarketPreviousClose']
+    device.contrast(10)
 
     # The time ascends from the abyss...
     animation(device, 8, 0)
 
     toggle = False  # Toggle the second indicator every second
     while True:
-        toggle = not toggle
-        sec = datetime.now().second
-        if sec == 59:
-            # When we change minutes, animate the minute change
-            minute_change(device)
-        elif (sec == 30) and (int(datetime.now().strftime('%M')) % 5 == 0):
-            # Half-way through each minute, display the complete date/time,
-            # animating the time display into and out of the abyss.
-            tsla_info = tsla.info
-            tsla_price = tsla_info['regularMarketPrice']
-            tsla_prev_close_price = tsla_info['regularMarketPreviousClose']
-            if tsla_prev_close_price > tsla_price:
-                arrow = '\37'
+        try:
+            toggle = not toggle
+            sec = datetime.now().second
+            if sec == 59:
+                # When we change minutes, animate the minute change
+                minute_change(device)
+            elif (sec == 30) and (int(datetime.now().strftime('%M')) % 5 == 0):
+                # every 5 minutes, display the Tesla stock price,
+                # animating the time display into and out of the abyss.
+                full_msg = "TSLA " + price_change["arrow"] + " " + str(price_change["tsla_price"])
+                animation(device, 0, 8)
+                show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
+                show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
+                animation(device, 8, 0)
             else:
-                arrow = '\36'
-            full_msg = "TSLA " + arrow + " " + str(tsla_price)
-            animation(device, 0, 8)
-            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
-            show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
-            animation(device, 8, 0)
+                # Do the following twice a second (so the seconds' indicator blips).
+                # I'd optimize if I had to - but what's the point?
+                # Even my Raspberry PI2 can do this at 4% of a single one of the 4 cores!
+                hours = datetime.now().strftime('%H')
+                minutes = datetime.now().strftime('%M')
+                with canvas(device) as draw:
+                    text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
+                    text(draw, (15, 0), ":" if toggle else " ", fill="white", font=proportional(TSLA_FONT))
+                    text(draw, (18, 0), minutes, fill="white", font=proportional(TSLA_FONT))
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            event.set()
+            break
+    t.join()
+
+def update_tsla_price(price_change):
+    while True:
+        if (int(datetime.now().strftime('%M')) % 5) == 4:
+            tsla = yf.Ticker('TSLA')
+            tsla_info = tsla.info
+            price_change["tsla_price"] = tsla_info['regularMarketPrice']
+            tsla_prev_close_price = tsla_info['regularMarketPreviousClose']
+
+            if tsla_prev_close_price > price_change["tsla_price"]:
+                price_change["arrow"] = '\37'
+            else:
+                price_change["arrow"] = '\36'
         else:
-            # Do the following twice a second (so the seconds' indicator blips).
-            # I'd optimize if I had to - but what's the point?
-            # Even my Raspberry PI2 can do this at 4% of a single one of the 4 cores!
-            hours = datetime.now().strftime('%H')
-            minutes = datetime.now().strftime('%M')
-            with canvas(device) as draw:
-                text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
-                text(draw, (15, 0), ":" if toggle else " ", fill="white", font=proportional(TSLA_FONT))
-                text(draw, (18, 0), minutes, fill="white", font=proportional(TSLA_FONT))
-            time.sleep(0.5)
+            time.sleep(60)
+        if event.is_set():
+            break
 
 
 if __name__ == "__main__":
