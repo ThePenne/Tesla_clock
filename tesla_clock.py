@@ -1,24 +1,24 @@
 #!/usr/bin/python3
-import yfinance as yf
 import time
+import requests
 from datetime import datetime
 
 from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
 from luma.core.legacy import text, show_message
-from luma.core.legacy.font import proportional #, CP437_FONT, TINY_FONT, SEG7_FONT
+from luma.core.legacy.font import proportional, CP437_FONT #, TINY_FONT, SEG7_FONT
 from Font import TSLA_FONT
 from threading import Thread, Event
 
 event = Event()
 
-price_change = {"arrow": '-', "tsla_price": 0}
+price_change = {"arrow": "-", "tsla_price": 0}
 
 def minute_change(device):
     '''When we reach a minute change, animate it.'''
-    hours = datetime.now().strftime('%H')
-    minutes = datetime.now().strftime('%M')
+    hours = datetime.now().strftime("%H")
+    minutes = datetime.now().strftime("%M")
 
     def helper(current_y):
         with canvas(device) as draw:
@@ -29,15 +29,15 @@ def minute_change(device):
 
     for current_y in range(1, 9):
         helper(current_y)
-    minutes = datetime.now().strftime('%M')
+    minutes = datetime.now().strftime("%M")
     for current_y in range(9, 1, -1):
         helper(current_y)
 
 
 def animation(device, from_y, to_y):
     '''Animate the whole thing, moving it into/out of the abyss.'''
-    hourstime = datetime.now().strftime('%H')
-    mintime = datetime.now().strftime('%M')
+    hourstime = datetime.now().strftime("%H")
+    mintime = datetime.now().strftime("%M")
     current_y = from_y
     while current_y != to_y:
         with canvas(device) as draw:
@@ -68,7 +68,7 @@ def main():
             if sec == 59:
                 # When we change minutes, animate the minute change
                 minute_change(device)
-            elif (sec == 30) and (int(datetime.now().strftime('%M')) % 5 == 0):
+            elif (sec == 30) and (int(datetime.now().strftime("%M")) % 5 == 0):
                 # every 5 minutes, display the Tesla stock price,
                 # animating the time display into and out of the abyss.
                 full_msg = "TSLA " + price_change["arrow"] + " " + str(price_change["tsla_price"])
@@ -76,12 +76,19 @@ def main():
                 show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
                 show_message(device, full_msg, fill="white", font=proportional(TSLA_FONT), scroll_delay=0.1)
                 animation(device, 8, 0)
+            elif (sec == 30) and (int(datetime.now().strftime("%M")) % 5 == 2):
+                # show current date
+                full_msg = datetime.now().strftime("%d.%m.%y - %a")
+                animation(device, 0, 8)
+                show_message(device, full_msg, fill="white", font=proportional(CP437_FONT), scroll_delay=0.1)
+                show_message(device, full_msg, fill="white", font=proportional(CP437_FONT), scroll_delay=0.1)
+                animation(device, 8, 0)
             else:
                 # Do the following twice a second (so the seconds' indicator blips).
                 # I'd optimize if I had to - but what's the point?
                 # Even my Raspberry PI2 can do this at 4% of a single one of the 4 cores!
-                hours = datetime.now().strftime('%H')
-                minutes = datetime.now().strftime('%M')
+                hours = datetime.now().strftime("%H")
+                minutes = datetime.now().strftime("%M")
                 with canvas(device) as draw:
                     text(draw, (1, 0), hours, fill="white", font=proportional(TSLA_FONT))
                     text(draw, (15, 0), ":" if toggle else " ", fill="white", font=proportional(TSLA_FONT))
@@ -93,22 +100,28 @@ def main():
     t.join()
 
 def update_tsla_price(price_change):
-    while True:
-        if (int(datetime.now().strftime('%M')) % 5) == 4:
-            tsla = yf.Ticker('TSLA')
-            tsla_info = tsla.info
-            price_change["tsla_price"] = tsla_info['regularMarketPrice']
-            tsla_prev_close_price = tsla_info['regularMarketPreviousClose']
+    with open("api_key.txt", "r") as f:
+        api_key = f.read()
 
-            if tsla_prev_close_price > price_change["tsla_price"]:
-                price_change["arrow"] = '\37'
-            else:
-                price_change["arrow"] = '\36'
-        else:
-            time.sleep(60)
+    while True:
+        if (int(datetime.now().strftime("%M")) % 5) == 4:
+            try:
+                response = requests.get(f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=TSLA&apikey={api_key}")
+                data = response.json()
+                if "Note" in data.keys():
+                    price_change["arrow"] = "-"
+                    price_change["tsla_price"] = data["Note"]
+                    continue
+                price_change["arrow"] = "\36" if (int(float(data["Global Quote"]["09. change"])) > 0) else "\37"
+                price_change["tsla_price"] = data["Global Quote"]["05. price"]
+            except requests.ConnectionError:
+                price_change["arrow"] = "-"
+                price_change["tsla_price"] = "Error: Connection Failed. Retrying in 5 seconds..."
+                time.sleep(5)
+                continue
+        time.sleep(30)
         if event.is_set():
             break
-
 
 if __name__ == "__main__":
     main()
