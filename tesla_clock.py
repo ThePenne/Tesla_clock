@@ -1,6 +1,9 @@
 #!/usr/bin/python3
+import sys
 import time
 import requests
+import yfinance as yf
+
 from datetime import datetime
 
 from luma.led_matrix.device import max7219
@@ -100,25 +103,28 @@ def main():
     t.join()
 
 def update_tsla_price(price_change):
-    with open("api_key.txt", "r") as f:
-        api_key = f.read()
+    import yfinance as yf
 
+    tsla_ticker = yf.Ticker("TSLA")
     while True:
-        if (int(datetime.now().strftime("%M")) % 5) == 4:
+        if (int(datetime.now().strftime("%M")) % 2) == 1:
             try:
-                response = requests.get(f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=TSLA&apikey={api_key}")
-                data = response.json()
-                if "Note" in data.keys():
-                    price_change["arrow"] = "-"
-                    price_change["tsla_price"] = data["Note"]
-                    continue
-                price_change["arrow"] = "\36" if (int(float(data["Global Quote"]["09. change"])) > 0) else "\37"
-                price_change["tsla_price"] = data["Global Quote"]["05. price"]
+                history = tsla_ticker.history(period="1d")
+                latest_price = float(history.iloc[-1]["Close"])
+                change = latest_price - float(history.iloc[-1]["Open"])
+                price_change["arrow"] = "\36" if (change > 0) else "\37"
+                price_change["tsla_price"] = "{:.2f}".format(latest_price)
             except requests.ConnectionError:
                 price_change["arrow"] = "-"
-                price_change["tsla_price"] = "Error: Connection Failed. Retrying in 5 seconds..."
+                price_change["tsla_price"] = "Error: Connection Failed. Retrying..."
                 time.sleep(5)
                 continue
+            except:
+                price_change["arrow"] = "-"
+                price_change["tsla_price"] = "Unknown Error"
+                with open('tsla_ticker_info.txt', 'w') as file:
+                    file.write(json.dumps(tsla_ticker))
+                print("saved")
         time.sleep(30)
         if event.is_set():
             break
