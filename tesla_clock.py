@@ -112,19 +112,19 @@ def update_tsla_price(price_change):
                 history = tsla_ticker.history(period="1d")
                 latest_price = float(history.iloc[-1]["Close"])
                 change = latest_price - float(history.iloc[-1]["Open"])
-                price_change["arrow"] = "\36" if (change > 0) else "\37"
+                price_change["arrow"] = "\36" if (change >= 0) else "\37"
                 price_change["tsla_price"] = "{:.2f}".format(latest_price)
             except requests.ConnectionError:
                 price_change["arrow"] = "-"
                 price_change["tsla_price"] = "Error: Connection Failed. Retrying..."
                 time.sleep(5)
                 continue
-            except:
-                price_change["arrow"] = "-"
-                price_change["tsla_price"] = "Unknown Error"
+            except Exception as error:
+                price_change["arrow"] = type(error).__name__ + " -"
+                price_change["tsla_price"] = error
                 with open('tsla_ticker_info.txt', 'w') as file:
-                    file.write(json.dumps(tsla_ticker))
-                print("saved")
+                    file.write(f"{datetime.now().strftime("%d.%m.%y - %H:%M:%S")} -> {type(error).__name__} - {error}\n")
+                    
         time.sleep(30)
         if event.is_set():
             break
