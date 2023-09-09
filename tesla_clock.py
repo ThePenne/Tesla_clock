@@ -123,7 +123,7 @@ def update_tsla_price(price_change):
                 price_change["arrow"] = type(error).__name__ + " -"
                 price_change["tsla_price"] = error
                 with open('tsla_ticker_info.txt', 'w') as file:
-                    file.write(f"{datetime.now().strftime("%d.%m.%y - %H:%M:%S")} -> {type(error).__name__} - {error}\n")
+                    file.write(f'{datetime.now().strftime("%d.%m.%y - %H:%M:%S")} -> {type(error).__name__} - {error}\n')
                     
         time.sleep(30)
         if event.is_set():
