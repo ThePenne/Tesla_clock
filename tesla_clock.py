@@ -138,7 +138,6 @@ def get_nyse_closing_time():
         else:
             next_opening = get_next_opening(now)
             sleep_time = (next_opening - now).total_seconds()
-            print(f"NYSE is closed. Sleeping for {sleep_time:.2f} seconds until {next_opening} Eastern Time.")
             time.sleep(sleep_time)
 
 def update_tsla_price(price_change):
@@ -160,6 +159,14 @@ def update_tsla_price(price_change):
     }
     tiingo_url = f"https://api.tiingo.com/iex/?tickers=tsla&token={TIINGO_API_KEY}"
     
+    response = requests.get(tiingo_url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+    last_price = data[0]['tngoLast']
+    now_est = datetime.now(timezone('America/New_York'))
+    price_change["arrow"] = "\7"
+    price_change["tsla_price"] = "{:.2f}".format(last_price)
+
     nyse_closing = get_nyse_closing_time()
 
     while True:
@@ -168,10 +175,10 @@ def update_tsla_price(price_change):
             response.raise_for_status()
             data = response.json()
             last_price = data[0]['tngoLast']
-            now_est = datetime.datetime.now(timezone('America/New_York'))
+            now_est = datetime.now(timezone('America/New_York'))
 
             if now_est > nyse_closing: # Check if need to update closing time
-                price_change["arrow"] = "\9"
+                price_change["arrow"] = "\7"
                 price_change["tsla_price"] = "{:.2f}".format(last_price)
                 nyse_closing = get_nyse_closing_time()
             else: # market is open
