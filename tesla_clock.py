@@ -13,14 +13,15 @@ from luma.core.render import canvas
 from luma.core.legacy import text, show_message
 from luma.core.legacy.font import proportional, CP437_FONT
 from Font import TSLA_FONT
-from threading import Thread, Event
+from threading import Thread
 
 price_change = {"arrow": "-", "tsla_price": 0}
 
 def minute_change(device):
     # When we reach a minute change, animate it.
     hours = datetime.now().strftime("%H")
-    minutes = datetime.now().strftime("%M")
+    curr_minutes = datetime.now()
+    minutes = curr_minutes.strftime("%M")
 
     def helper(current_y):
         with canvas(device) as draw:
@@ -31,7 +32,7 @@ def minute_change(device):
 
     for current_y in range(1, 9):
         helper(current_y)
-    minutes = datetime.now().strftime("%M")
+    minutes = (curr_minutes + timedelta(0,1)).strftime("%M") # days, seconds, then other fields.
     for current_y in range(9, 1, -1):
         helper(current_y)
 
